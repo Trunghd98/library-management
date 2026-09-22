@@ -4,6 +4,7 @@ const { isStudent }= require('../middlewares/auth');
 const Book         = require('../models/Book');
 const Borrowing    = require('../models/Borrowing');
 const Notification = require('../models/Notification');
+const User         = require('../models/User');
 
 router.use(isStudent);
 
@@ -40,6 +41,46 @@ router.get('/notifications', async (req, res) => {
   const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
   await Notification.updateMany({ userId, isRead: false }, { isRead: true });
   res.render('student/notifications', { title: 'Thông báo', notifications });
+});
+
+router.get('/profile', (req, res) => {
+  res.render('student/profile', { title: 'Thông tin cá nhân' });
+});
+
+router.post('/profile/info', async (req, res) => {
+  try {
+    const { class: studentClass } = req.body;
+    await User.findByIdAndUpdate(req.session.user._id, { class: studentClass });
+    req.session.user.class = studentClass; // update session
+    req.flash('success', 'Cập nhật thông tin lớp học thành công!');
+    res.redirect('/student/profile');
+  } catch (err) {
+    req.flash('error', 'Có lỗi xảy ra khi cập nhật thông tin.');
+    res.redirect('/student/profile');
+  }
+});
+
+router.post('/profile/password', async (req, res) => {
+  try {
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+    if (newPassword !== confirmPassword) {
+      req.flash('error', 'Mật khẩu xác nhận không khớp!');
+      return res.redirect('/student/profile');
+    }
+    const user = await User.findById(req.session.user._id);
+    const isMatch = await user.comparePassword(oldPassword);
+    if (!isMatch) {
+      req.flash('error', 'Mật khẩu hiện tại không đúng!');
+      return res.redirect('/student/profile');
+    }
+    user.password = newPassword;
+    await user.save(); // trigger pre-save hook for bcrypt
+    req.flash('success', 'Đổi mật khẩu thành công!');
+    res.redirect('/student/profile');
+  } catch (err) {
+    req.flash('error', 'Có lỗi xảy ra khi đổi mật khẩu.');
+    res.redirect('/student/profile');
+  }
 });
 
 module.exports = router;

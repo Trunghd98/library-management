@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thông tin cá nhân · <%= libraryName %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;font-family:'Plus Jakarta Sans',sans-serif;}
+    body{background:linear-gradient(135deg,#e8f5e9 0%,#f0fdf4 50%,#e0f2fe 100%);background-attachment:fixed;min-height:100vh;color:#1e293b;}
+    .font-mono{font-family:'JetBrains Mono',monospace;}
+    .navbar-student{background:rgba(22,163,74,0.90);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.2);box-shadow:0 4px 24px rgba(22,163,74,0.25);position:sticky;top:0;z-index:100;}
+    .glass-card{background:rgba(255,255,255,0.70);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);border:1px solid rgba(255,255,255,0.85);box-shadow:0 8px 32px rgba(79,70,229,0.08),0 2px 8px rgba(0,0,0,0.04);border-radius:16px;}
+    .input-control{background:rgba(255,255,255,0.85);border:1.5px solid rgba(226,232,240,0.9);border-radius:10px;transition:all 0.2s ease;}
+    .input-control:focus{background:rgba(255,255,255,0.98);border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,0.15);outline:none;}
+    .input-control:disabled{background:rgba(241,245,249,0.7);cursor:not-allowed;}
+    .btn-green-primary{background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 4px 12px rgba(22,163,74,0.30);border:none;color:#fff;font-weight:600;border-radius:10px;transition:all 0.2s ease;cursor:pointer;}
+    .btn-green-primary:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(22,163,74,0.45);}
+    .page-content{animation:fadeInUp 0.4s ease both;}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    ::-webkit-scrollbar{width:6px;height:6px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:rgba(22,163,74,0.3);border-radius:3px;}
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+  <!-- NAVBAR -->
+  <header class="navbar-student w-full h-14 px-6 flex items-center justify-between text-white">
+    <div class="flex items-center space-x-8">
+      <a href="/student" class="flex items-center space-x-2.5 text-white font-bold text-base hover:opacity-90 transition no-underline group">
+        <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center border border-white/30 text-lg shadow-sm group-hover:scale-105 transition-transform">📚</div>
+        <span class="tracking-tight text-sm leading-tight"><%= libraryName %></span>
+      </a>
+      <nav class="hidden md:flex items-center space-x-1 text-sm font-medium">
+        <a href="/student" class="px-3.5 py-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition no-underline">Trang chủ</a>
+        <a href="/student/books" class="px-3.5 py-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition no-underline">Tra cứu sách</a>
+        <a href="/student/my-borrowings" class="px-3.5 py-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition no-underline">Lịch sử mượn</a>
+      </nav>
+    </div>
+    <div class="flex items-center space-x-4">
+      <a href="/student/notifications" title="Thông báo" class="relative p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition border border-white/10 no-underline">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+      </a>
+      
+      <!-- User info (Active) -->
+      <a href="/student/profile" class="flex items-center space-x-2.5 pl-2 border-l border-white/20 hover:bg-white/10 p-1.5 rounded-xl transition no-underline cursor-pointer bg-white/10">
+        <div class="hidden sm:block text-left leading-tight">
+          <div class="flex items-center gap-1.5">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-white/20 text-white border border-white/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-300"></span>Học sinh
+            </span>
+            <span class="text-xs font-semibold text-white"><%= user ? user.fullName : '' %></span>
+          </div>
+          <div class="text-[11px] font-mono text-emerald-100 opacity-90 mt-0.5"><%= user ? user.studentId : '' %><% if (user && user.class) { %> · Lớp <%= user.class %><% } %></div>
+        </div>
+      </a>
+      
+      <form action="/logout" method="POST" style="display:inline;">
+        <button type="submit" title="Đăng xuất" class="p-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 transition-all text-white hover:scale-105 flex items-center space-x-1 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </button>
+      </form>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="flex-grow w-full max-w-[900px] mx-auto px-4 py-8 page-content">
+    
+    <div class="mb-6">
+      <div class="flex items-center space-x-2 text-xs text-slate-500 mb-1">
+        <a href="/student" class="hover:text-green-700 transition no-underline text-slate-500">Học sinh</a>
+        <span>/</span>
+        <span class="text-green-700 font-semibold">Thông tin cá nhân</span>
+      </div>
+      <h1 class="text-2xl font-extrabold text-slate-800 flex items-center gap-2">
+        <span>👤</span> Hồ Sơ Học Sinh
+      </h1>
+      <p class="text-sm text-slate-500 mt-1">Xem thông tin định danh, cập nhật lớp học và thay đổi mật khẩu đăng nhập hệ thống.</p>
+    </div>
+
+    <!-- Flash messages -->
+    <% if (success_msg && success_msg.length > 0) { %>
+    <div class="mb-5 bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-xl px-4 py-3 text-sm flex items-center justify-between shadow-sm">
+      <div class="flex items-center gap-2"><span>✅</span><span><%= success_msg %></span></div>
+      <button onclick="this.parentElement.remove()" class="text-emerald-600 font-bold">✕</button>
+    </div>
+    <% } %>
+    <% if (error_msg && error_msg.length > 0) { %>
+    <div class="mb-5 bg-red-50 border border-red-300 text-red-800 rounded-xl px-4 py-3 text-sm flex items-center justify-between shadow-sm">
+      <div class="flex items-center gap-2"><span>❌</span><span><%= error_msg %></span></div>
+      <button onclick="this.parentElement.remove()" class="text-red-600 font-bold">✕</button>
+    </div>
+    <% } %>
+
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+      
+      <!-- Left: Identity Card -->
+      <div class="md:col-span-4 space-y-6">
+        <div class="glass-card p-6 flex flex-col items-center text-center">
+          <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-green-400 to-emerald-600 flex items-center justify-center text-white text-4xl shadow-lg shadow-green-500/30 mb-4 border-4 border-white">
+            🎓
+          </div>
+          <h2 class="text-lg font-bold text-slate-800"><%= user.fullName %></h2>
+          <div class="text-sm font-mono text-emerald-700 font-semibold mt-1 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+            <%= user.studentId %>
+          </div>
+          
+          <div class="w-full mt-6 pt-4 border-t border-slate-200/60 text-left text-sm space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-500">Phân quyền:</span>
+              <span class="font-medium text-slate-700 flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Học sinh
+              </span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-slate-500">Trạng thái:</span>
+              <span class="font-medium text-green-600">Đang hoạt động</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Forms -->
+      <div class="md:col-span-8 space-y-6">
+        
+        <!-- Form 1: Cập nhật Lớp -->
+        <div class="glass-card p-6">
+          <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
+            Thông tin cơ bản
+          </h3>
+          <form action="/student/profile/info" method="POST" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Họ và tên (Cố định)</label>
+                <input type="text" value="<%= user.fullName %>" disabled class="w-full px-4 py-2.5 input-control text-sm font-medium">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Mã học sinh (Cố định)</label>
+                <input type="text" value="<%= user.studentId %>" disabled class="w-full px-4 py-2.5 input-control text-sm font-medium font-mono">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1.5">Lớp học hiện tại</label>
+              <input type="text" name="class" value="<%= user.class || '' %>" placeholder="VD: 10A1, 11B2..." required class="w-full px-4 py-2.5 input-control text-sm">
+              <p class="text-[11px] text-slate-500 mt-1.5">Vui lòng cập nhật lớp mới nếu bạn đã lên lớp hoặc chuyển lớp.</p>
+            </div>
+            <div class="flex justify-end pt-2">
+              <button type="submit" class="px-5 py-2.5 btn-green-primary text-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Lưu thông tin
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Form 2: Đổi mật khẩu -->
+        <div class="glass-card p-6">
+          <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            Đổi mật khẩu
+          </h3>
+          <form action="/student/profile/password" method="POST" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1.5">Mật khẩu hiện tại</label>
+              <input type="password" name="oldPassword" required placeholder="Nhập mật khẩu đang dùng" class="w-full px-4 py-2.5 input-control text-sm">
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Mật khẩu mới</label>
+                <input type="password" name="newPassword" required minlength="6" placeholder="Tối thiểu 6 ký tự" class="w-full px-4 py-2.5 input-control text-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Xác nhận mật khẩu mới</label>
+                <input type="password" name="confirmPassword" required minlength="6" placeholder="Nhập lại mật khẩu mới" class="w-full px-4 py-2.5 input-control text-sm">
+              </div>
+            </div>
+            <div class="flex justify-end pt-2">
+              <button type="submit" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-lg text-sm transition-colors shadow-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                Đổi mật khẩu
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full py-5 text-center text-xs text-slate-500 border-t border-emerald-900/10 mt-6 bg-white/20 backdrop-blur-sm">
+    <div class="max-w-[900px] mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <span class="font-semibold text-slate-600"><%= libraryName %></span>
+      <p class="text-slate-500">Giờ mở cửa thư viện: Thứ 2 – Thứ 7 (07:30 – 17:00)</p>
+    </div>
+  </footer>
+
+</body>
+</html>
