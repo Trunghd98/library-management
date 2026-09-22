@@ -1,0 +1,7 @@
+.sidebar .nav-link:hover { background: rgba(255,255,255,0.1); border-radius: 6px; }
+.sidebar .nav-link { border-radius: 6px; transition: background 0.2s; }
+.card { border-radius: 12px !important; }
+.navbar { height: 56px; }
+body { font-size: 0.9rem; }
+table th { font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+.badge { font-size: 0.75rem; }

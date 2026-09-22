@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Danh sách phiếu mượn · <%= libraryName %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: linear-gradient(135deg,#e8edf8 0%,#ede8f8 50%,#e8f0fa 100%); min-height: 100vh; }
+    .glass-panel { background:rgba(255,255,255,0.78); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border:1px solid rgba(255,255,255,0.85); box-shadow:0 10px 25px -5px rgba(99,102,241,0.05),0 8px 10px -6px rgba(0,0,0,0.03); }
+    .glass-nav { background:linear-gradient(90deg,#4f46e5 0%,#4338ca 100%); backdrop-filter:blur(10px); }
+    .glass-input { background:rgba(255,255,255,0.9); border:1px solid #cbd5e1; border-radius:0.75rem; padding:0.5rem 1rem 0.5rem 2.5rem; font-size:0.75rem; color:#1e293b; width:100%; outline:none; }
+    .glass-input:focus { background:#fff; border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,0.2); }
+    ::-webkit-scrollbar{width:6px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:rgba(79,70,229,0.3);border-radius:3px;}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .animate-fadein{animation:fadeInUp 0.35s ease-out both;}
+  </style>
+</head>
+<body class="text-slate-800 antialiased flex flex-col min-h-screen">
+
+  <!-- NAVBAR -->
+  <header class="glass-nav sticky top-0 z-40 text-white shadow-md">
+    <div class="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <a href="/admin" class="flex items-center space-x-3 no-underline text-white">
+        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </div>
+        <span class="text-xl font-bold tracking-tight"><%= libraryName %></span>
+      </a>
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-sm">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+          </span>
+          <span class="text-white/80 font-normal">Thủ thư:</span>
+          <span class="font-semibold"><%= user ? user.fullName : 'Admin' %></span>
+        </div>
+        <form action="/logout" method="POST" style="display:inline;">
+          <button type="submit" class="inline-flex items-center space-x-2 px-3.5 py-1.5 text-sm font-medium text-white/90 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span>Đăng xuất</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <!-- LAYOUT -->
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-gradient-to-b from-slate-900 to-slate-950 text-slate-300 flex-shrink-0 flex flex-col justify-between shadow-2xl border-r border-slate-800">
+      <nav class="px-4 py-6 space-y-6">
+        <div>
+          <a href="/admin" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/60 font-medium transition no-underline">
+            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="text-sm">Dashboard</span>
+          </a>
+        </div>
+        <div class="space-y-1">
+          <p class="px-3 text-xs font-bold uppercase tracking-wider text-slate-500">QUẢN LÝ</p>
+          <a href="/admin/books" class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/60 font-medium transition no-underline">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="text-sm">Quản lý sách</span>
+          </a>
+          <a href="/admin/students" class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/60 font-medium transition no-underline">
+            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="text-sm">Quản lý học sinh</span>
+          </a>
+        </div>
+        <div class="space-y-1">
+          <p class="px-3 text-xs font-bold uppercase tracking-wider text-slate-500">NGHIỆP VỤ</p>
+          <a href="/admin/borrow" class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/60 font-medium transition no-underline">
+            <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="text-sm">Mượn sách</span>
+          </a>
+          <a href="/admin/return" class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/60 font-medium transition no-underline">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="text-sm">Trả sách</span>
+          </a>
+          <!-- ACTIVE: Danh sách mượn -->
+          <a href="/admin/borrowings" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-white font-semibold transition no-underline" style="background:linear-gradient(90deg,rgba(79,70,229,0.35) 0%,transparent 100%);border-left:3px solid #4f46e5;">
+            <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="text-sm">Danh sách mượn</span>
+          </a>
+        </div>
+        <div class="space-y-1">
+          <p class="px-3 text-xs font-bold uppercase tracking-wider text-slate-500">BÁO CÁO</p>
+          <a href="/admin/reports" class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/60 font-medium transition no-underline">
+            <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="text-sm">Báo cáo thống kê</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="flex-1 overflow-y-auto px-6 lg:px-10 py-8">
+      <div class="max-w-7xl mx-auto space-y-6 animate-fadein">
+
+        <!-- Page header -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-2xl">📋</span>
+              <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Danh Sách Phiếu Mượn</h1>
+            </div>
+            <p class="mt-1 text-sm text-slate-600">Quản lý, tra cứu và theo dõi toàn bộ lịch sử phiếu mượn trả sách trong thư viện.</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="inline-flex items-center px-3 py-1.5 rounded-lg bg-indigo-100 text-indigo-800 text-xs font-semibold border border-indigo-200 shadow-sm">
+              <svg class="w-3.5 h-3.5 mr-1.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+              Tổng cộng: <%= borrowings ? borrowings.length : 0 %> phiếu
+            </span>
+          </div>
+        </div>
+
+        <!-- Flash messages -->
+        <% if (success_msg) { %>
+        <div class="glass-panel rounded-2xl p-4 flex items-center justify-between gap-3 border-l-4 border-emerald-500">
+          <div class="flex items-center gap-3 text-sm text-emerald-800"><span>✅</span><span><%= success_msg %></span></div>
+          <button onclick="this.parentElement.remove()" class="text-emerald-600 font-bold text-lg px-1">×</button>
+        </div>
+        <% } %>
+        <% if (error_msg) { %>
+        <div class="glass-panel rounded-2xl p-4 flex items-center justify-between gap-3 border-l-4 border-red-500">
+          <div class="flex items-center gap-3 text-sm text-red-800"><span>❌</span><span><%= error_msg %></span></div>
+          <button onclick="this.parentElement.remove()" class="text-red-600 font-bold text-lg px-1">×</button>
+        </div>
+        <% } %>
+
+        <!-- Filter tabs + search -->
+        <%
+          const all      = borrowings ? borrowings.length : 0;
+          const cntBorrowing = borrowings ? borrowings.filter(b=>b.status==='borrowing').length : 0;
+          const cntOverdue   = borrowings ? borrowings.filter(b=>b.status==='overdue').length : 0;
+          const cntReturned  = borrowings ? borrowings.filter(b=>b.status==='returned').length : 0;
+        %>
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+          <!-- Status tabs (link-based filter) -->
+          <div class="flex items-center flex-wrap gap-2">
+            <a href="/admin/borrowings" class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition no-underline <%= !status ? 'text-white shadow-sm' : 'bg-white/50 text-slate-600 border border-slate-200 hover:bg-slate-50' %>" style="<%= !status ? 'background-color:#1e293b;' : '' %>">
+              <span>Tất cả</span>
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold <%= !status ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600' %>"><%= all %></span>
+            </a>
+            <a href="/admin/borrowings?status=borrowing" class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition no-underline <%= status==='borrowing' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white/50 hover:bg-blue-50/60' %>" style="<%= status!=='borrowing' ? 'border:1.5px solid #2563eb;color:#2563eb;' : '' %>">
+              <span>Đang mượn</span>
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700"><%= cntBorrowing %></span>
+            </a>
+            <a href="/admin/borrowings?status=overdue" class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition no-underline <%= status==='overdue' ? 'bg-rose-600 text-white shadow-sm' : 'bg-white/50 hover:bg-red-50/60' %>" style="<%= status!=='overdue' ? 'border:1.5px solid #dc2626;color:#dc2626;' : '' %>">
+              <span>Quá hạn</span>
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700"><%= cntOverdue %></span>
+            </a>
+            <a href="/admin/borrowings?status=returned" class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition no-underline <%= status==='returned' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-white/50 hover:bg-emerald-50/60' %>" style="<%= status!=='returned' ? 'border:1.5px solid #16a34a;color:#16a34a;' : '' %>">
+              <span>Đã trả</span>
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800"><%= cntReturned %></span>
+            </a>
+          </div>
+          <!-- Quick actions -->
+          <div class="flex items-center gap-2">
+            <a href="/admin/borrow" class="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white text-xs font-semibold rounded-xl shadow-md transition no-underline">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+              <span>+ Tạo phiếu mới</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Table card -->
+        <div class="glass-panel rounded-2xl overflow-hidden border border-white/90">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50/70 border-b border-slate-200/70">
+                  <th class="py-3.5 px-4 text-center text-slate-400 w-12">#</th>
+                  <th class="py-3.5 px-6">Học Sinh</th>
+                  <th class="py-3.5 px-6">Sách</th>
+                  <th class="py-3.5 px-4">Ngày Mượn</th>
+                  <th class="py-3.5 px-4">Hạn Trả</th>
+                  <th class="py-3.5 px-4">Ngày Trả</th>
+                  <th class="py-3.5 px-5">Trạng Thái</th>
+                  <th class="py-3.5 px-5">Tiền Phạt</th>
+                  <th class="py-3.5 px-6 text-center">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <% if (borrowings && borrowings.length > 0) { %>
+                  <% borrowings.forEach(function(b, idx) { %>
+                    <%
+                      const isOverdue  = b.status === 'overdue';
+                      const isBorrowing= b.status === 'borrowing';
+                      const isReturned = b.status === 'returned';
+                      function fmtD(d){ if(!d)return'—'; return new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+                    %>
+                    <tr class="transition duration-150 <%= isOverdue ? 'hover:bg-red-50/50' : 'hover:bg-white/60' %>"
+                        style="<%= isOverdue ? 'background-color:rgba(220,38,38,0.06);' : '' %>">
+
+                      <td class="py-4 px-4 text-center text-xs font-semibold text-slate-400"><%= idx + 1 %></td>
+
+                      <td class="py-4 px-6">
+                        <div class="font-semibold text-slate-900 text-sm"><%= b.userId ? b.userId.fullName : '—' %></div>
+                        <div class="text-xs text-slate-500 mt-0.5">
+                          <span class="font-mono font-medium text-indigo-700"><%= b.userId ? b.userId.studentId : '' %></span>
+                          <% if (b.userId && b.userId.class) { %> · Lớp <%= b.userId.class %><% } %>
+                        </div>
+                      </td>
+
+                      <td class="py-4 px-6">
+                        <div class="font-semibold text-slate-900 text-sm"><%= b.bookId ? b.bookId.title : '—' %></div>
+                        <div class="text-xs text-slate-500 mt-0.5"><%= b.bookId ? b.bookId.author : '' %></div>
+                      </td>
+
+                      <td class="py-4 px-4 text-sm text-slate-600 font-medium"><%= fmtD(b.borrowDate) %></td>
+                      <td class="py-4 px-4 text-sm font-medium <%= isOverdue ? 'text-rose-700 font-semibold' : 'text-slate-600' %>"><%= fmtD(b.dueDate) %></td>
+                      <td class="py-4 px-4 text-sm <%= isReturned ? 'text-emerald-700 font-semibold' : 'text-slate-400 italic' %>">
+                        <%= isReturned ? fmtD(b.returnDate) : '—' %>
+                      </td>
+
+                      <td class="py-4 px-5">
+                        <% if (isOverdue) { %>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 border border-rose-300 shadow-sm">
+                          <span class="w-1.5 h-1.5 rounded-full bg-rose-600 mr-1.5 animate-pulse"></span>Quá hạn
+                        </span>
+                        <% } else if (isBorrowing) { %>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+                          <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>Đang mượn
+                        </span>
+                        <% } else { %>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-300">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>Đã trả
+                        </span>
+                        <% } %>
+                      </td>
+
+                      <td class="py-4 px-5">
+                        <% if (b.fine && b.fine > 0) { %>
+                        <span class="text-sm font-bold text-rose-600"><%= b.fine.toLocaleString('vi-VN') %> đ</span>
+                        <% } else { %>
+                        <span class="text-sm text-slate-400 italic">—</span>
+                        <% } %>
+                      </td>
+
+                      <td class="py-4 px-6 text-center">
+                        <div class="inline-flex items-center space-x-1.5">
+                          <!-- Nút xem (tất cả) -->
+                          <a href="/admin/return?search=<%= b.userId ? b.userId.studentId : '' %>"
+                             class="p-1.5 text-slate-600 hover:text-indigo-600 hover:bg-white rounded-lg transition shadow-sm no-underline"
+                             title="Xem phiếu mượn học sinh">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                          </a>
+                          <!-- Nút trả (chỉ với borrowing/overdue) -->
+                          <% if (!isReturned) { %>
+                          <form action="/admin/return/<%= b._id %>" method="POST" style="display:inline;"
+                                onsubmit="return confirm('Xác nhận trả sách này?');">
+                            <button type="submit" title="Trả sách"
+                              class="inline-flex items-center space-x-1 px-2.5 py-1 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white text-xs font-semibold rounded-lg shadow-sm transition active:scale-95">
+                              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"/></svg>
+                              <span>Trả</span>
+                            </button>
+                          </form>
+                          <% } %>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }); %>
+                <% } else { %>
+                <tr>
+                  <td colspan="9" class="py-16 text-center text-slate-400">
+                    <div class="text-4xl mb-3">📭</div>
+                    <div class="text-sm font-medium">Không có phiếu mượn nào<%= status ? ' trong trạng thái này' : '' %></div>
+                    <a href="/admin/borrow" class="mt-2 inline-block text-xs text-indigo-600 no-underline">+ Tạo phiếu mượn mới →</a>
+                  </td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Table footer -->
+          <div class="px-6 py-4 bg-slate-50/80 border-t border-slate-200/80 text-xs text-slate-600 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="flex items-center space-x-2 text-slate-500">
+              <span>Tổng: <strong class="text-slate-800 font-semibold"><%= borrowings ? borrowings.length : 0 %></strong> phiếu mượn</span>
+              <% if (status) { %>
+              <span>•</span>
+              <span>Đang lọc: <strong class="<%= status==='overdue' ? 'text-rose-600' : status==='borrowing' ? 'text-blue-600' : 'text-emerald-600' %>">
+                <%= status==='overdue' ? 'Quá hạn' : status==='borrowing' ? 'Đang mượn' : 'Đã trả' %>
+              </strong></span>
+              <% } %>
+            </div>
+            <a href="/admin/borrowings" class="text-indigo-600 hover:underline text-xs font-medium">Xem tất cả →</a>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+</body>
+</html>

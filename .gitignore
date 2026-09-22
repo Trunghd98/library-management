@@ -1,0 +1,12 @@
+# Thư viện (nặng ~100MB, không cần upload)
+node_modules/
+
+# File chứa mật khẩu (tuyệt đối không upload)
+.env
+
+# File hệ thống macOS
+.DS_Store
+
+# File log
+*.log
+npm-debug.log*

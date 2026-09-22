@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo cáo thống kê · <%= libraryName %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family:'Plus Jakarta Sans',sans-serif; background:linear-gradient(135deg,#e8edf8 0%,#ede8f8 50%,#e8f0fa 100%); background-attachment:fixed; min-height:100vh; color:#1e293b; }
+    .font-mono { font-family:'JetBrains Mono',monospace; }
+    .glass-nav { background:rgba(79,70,229,0.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid rgba(255,255,255,0.2); box-shadow:0 4px 24px rgba(79,70,229,0.25); }
+    .sidebar { background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%); border-right:1px solid rgba(255,255,255,0.06); box-shadow:4px 0 24px rgba(0,0,0,0.15); }
+    .card-glass { background:rgba(255,255,255,0.72); backdrop-filter:blur(14px) saturate(180%); -webkit-backdrop-filter:blur(14px) saturate(180%); border:1px solid rgba(255,255,255,0.85); box-shadow:0 8px 32px rgba(79,70,229,0.08),0 2px 8px rgba(0,0,0,0.04); border-radius:16px; }
+    .kpi-hover { transition:transform 0.3s cubic-bezier(0.4,0,0.2,1),box-shadow 0.3s cubic-bezier(0.4,0,0.2,1); }
+    .kpi-hover:hover { transform:translateY(-6px); box-shadow:0 20px 35px -8px rgba(79,70,229,0.18),0 4px 14px rgba(0,0,0,0.06); }
+    .nav-link { color:rgba(255,255,255,0.55); border-radius:8px; border-left:3px solid transparent; margin:2px 8px; transition:all 0.2s ease; }
+    .nav-link:hover { background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.88); transform:translateX(4px); border-left-color:rgba(99,102,241,0.4); }
+    .nav-link.active { background:linear-gradient(90deg,rgba(79,70,229,0.35) 0%,transparent 100%); border-left:3px solid #4f46e5; color:#fff; font-weight:600; text-shadow:0 0 12px rgba(99,102,241,0.6); }
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    .animate-fadeInUp{animation:fadeInUp 0.4s ease both;}
+    .kpi-card:nth-child(1){animation-delay:0.05s} .kpi-card:nth-child(2){animation-delay:0.10s} .kpi-card:nth-child(3){animation-delay:0.15s} .kpi-card:nth-child(4){animation-delay:0.20s}
+    ::-webkit-scrollbar{width:6px;height:6px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:rgba(79,70,229,0.3);border-radius:3px;}
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- NAVBAR -->
+  <header class="glass-nav h-14 w-full flex items-center justify-between px-6 sticky top-0 z-50">
+    <a href="/admin" class="flex items-center space-x-3 no-underline text-white">
+      <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white shadow-sm border border-white/25">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+      </div>
+      <span class="font-bold text-white text-lg tracking-tight"><%= libraryName %></span>
+    </a>
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-2 bg-white/15 border border-white/20 px-3 py-1.5 rounded-full text-xs font-medium text-white">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-white/80">Thủ thư:</span>
+        <span class="font-semibold"><%= user ? user.fullName : 'Admin' %></span>
+      </div>
+      <form action="/logout" method="POST" style="display:inline;">
+        <button type="submit" class="inline-flex items-center space-x-1.5 text-xs text-white/90 hover:text-white border border-white/30 hover:border-white/60 bg-white/5 hover:bg-white/15 px-3 py-1.5 rounded-lg transition-all cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          <span>Đăng xuất</span>
+        </button>
+      </form>
+    </div>
+  </header>
+
+  <!-- LAYOUT -->
+  <div class="flex flex-1 relative">
+
+    <!-- SIDEBAR -->
+    <aside class="w-56 sidebar flex-shrink-0 flex flex-col py-4 min-h-[calc(100vh-3.5rem)] sticky top-14">
+      <div class="px-4 mb-2">
+        <a href="/admin" class="nav-link flex items-center space-x-3 px-3 py-2.5 text-xs font-medium no-underline">
+          <svg class="w-4 h-4 text-[#818cf8]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          <span>Dashboard</span>
+        </a>
+      </div>
+      <div class="mt-2 pt-3 border-t border-white/10 px-4">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block px-3 mb-1.5">QUẢN LÝ</span>
+        <a href="/admin/books" class="nav-link flex items-center space-x-3 px-3 py-2 text-xs font-medium no-underline">
+          <svg class="w-4 h-4 text-[#34d399]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          <span>Quản lý sách</span>
+        </a>
+        <a href="/admin/students" class="nav-link flex items-center space-x-3 px-3 py-2 text-xs font-medium no-underline">
+          <svg class="w-4 h-4 text-[#60a5fa]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          <span>Quản lý học sinh</span>
+        </a>
+      </div>
+      <div class="mt-2 pt-3 border-t border-white/10 px-4">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block px-3 mb-1.5">NGHIỆP VỤ</span>
+        <a href="/admin/borrow" class="nav-link flex items-center space-x-3 px-3 py-2 text-xs font-medium no-underline">
+          <svg class="w-4 h-4 text-[#a78bfa]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>Mượn sách</span>
+        </a>
+        <a href="/admin/return" class="nav-link flex items-center space-x-3 px-3 py-2 text-xs font-medium no-underline">
+          <svg class="w-4 h-4 text-[#4ade80]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+          <span>Trả sách</span>
+        </a>
+        <a href="/admin/borrowings" class="nav-link flex items-center space-x-3 px-3 py-2 text-xs font-medium no-underline">
+          <svg class="w-4 h-4 text-[#facc15]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+          <span>Danh sách mượn</span>
+        </a>
+      </div>
+      <div class="mt-2 pt-3 border-t border-white/10 px-4">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block px-3 mb-1.5">BÁO CÁO</span>
+        <a href="/admin/reports" class="nav-link active flex items-center space-x-3 px-3 py-2 text-xs font-medium no-underline">
+          <svg class="w-4 h-4 text-[#f87171]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          <span>Báo cáo thống kê</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="flex-1 p-8 overflow-y-auto">
+
+      <%
+        // Computed values from route
+        const totalBorrowing = borrowingStats ? borrowingStats.borrowing : 0;
+        const totalOverdue   = borrowingStats ? borrowingStats.overdue   : 0;
+        const totalReturned  = borrowingStats ? borrowingStats.returned  : 0;
+        const totalAll       = totalBorrowing + totalOverdue + totalReturned;
+        const pctBorrowing   = totalAll > 0 ? ((totalBorrowing / totalAll) * 100).toFixed(1) : 0;
+        const pctOverdue     = totalAll > 0 ? ((totalOverdue   / totalAll) * 100).toFixed(1) : 0;
+        const pctReturned    = totalAll > 0 ? ((totalReturned  / totalAll) * 100).toFixed(1) : 0;
+        const todayStr       = new Date().toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'});
+      %>
+
+      <!-- Page header -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white shadow-md">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Báo Cáo Thống Kê</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Tổng hợp số liệu đầu sách, học sinh, lượt mượn trả và thống kê tiền phạt thư viện.</p>
+          </div>
+        </div>
+        <div class="mt-4 md:mt-0 flex items-center space-x-3">
+          <div class="inline-flex items-center px-3 py-1.5 rounded-lg bg-white/70 border border-slate-200/80 text-xs text-slate-600 shadow-sm">
+            <svg class="w-3.5 h-3.5 text-indigo-500 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <span>Dữ liệu tính đến: <strong><%= todayStr %></strong></span>
+          </div>
+          <button onclick="window.print()" class="inline-flex items-center px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-md transition-all hover:-translate-y-0.5 active:translate-y-0">
+            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            <span>Xuất báo cáo</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4 KPI CARDS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+
+        <!-- Card 1: Đầu sách -->
+        <div class="card-glass kpi-card kpi-hover p-5 flex items-center space-x-4 animate-fadeInUp">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md flex-shrink-0" style="background:linear-gradient(135deg,#818cf8,#4f46e5);box-shadow:0 4px 14px rgba(79,70,229,0.35);">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          </div>
+          <div>
+            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Đầu sách</span>
+            <div class="text-2xl font-bold text-slate-800 tracking-tight mt-0.5 font-mono"><%= stats ? stats.totalBooks : 0 %></div>
+            <span class="text-[11px] text-emerald-600 font-medium flex items-center mt-0.5">
+              <svg class="w-3 h-3 mr-0.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+              Tổng đầu sách trong kho
+            </span>
+          </div>
+        </div>
+
+        <!-- Card 2: Học sinh -->
+        <div class="card-glass kpi-card kpi-hover p-5 flex items-center space-x-4 animate-fadeInUp">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md flex-shrink-0" style="background:linear-gradient(135deg,#4ade80,#16a34a);box-shadow:0 4px 14px rgba(22,163,74,0.35);">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          </div>
+          <div>
+            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Học sinh</span>
+            <div class="text-2xl font-bold text-slate-800 tracking-tight mt-0.5 font-mono"><%= stats ? stats.totalStudents : 0 %></div>
+            <span class="text-[11px] text-emerald-600 font-medium flex items-center mt-0.5">
+              <svg class="w-3 h-3 mr-0.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Đang hoạt động
+            </span>
+          </div>
+        </div>
+
+        <!-- Card 3: Lượt mượn đã trả -->
+        <div class="card-glass kpi-card kpi-hover p-5 flex items-center space-x-4 animate-fadeInUp">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md flex-shrink-0" style="background:linear-gradient(135deg,#fbbf24,#d97706);box-shadow:0 4px 14px rgba(217,119,6,0.35);">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          </div>
+          <div>
+            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Lượt mượn (đã trả)</span>
+            <div class="text-2xl font-bold text-slate-800 tracking-tight mt-0.5 font-mono"><%= stats ? stats.returnedCount : 0 %></div>
+            <span class="text-[11px] text-amber-700 font-medium flex items-center mt-0.5">
+              <svg class="w-3 h-3 mr-0.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              Đã hoàn trả về kho
+            </span>
+          </div>
+        </div>
+
+        <!-- Card 4: Tổng tiền phạt -->
+        <div class="card-glass kpi-card kpi-hover p-5 flex items-center space-x-4 animate-fadeInUp">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md flex-shrink-0" style="background:linear-gradient(135deg,#f87171,#dc2626);box-shadow:0 4px 14px rgba(220,38,38,0.35);">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div>
+            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Tổng tiền phạt (VNĐ)</span>
+            <div class="text-2xl font-bold text-[#dc2626] tracking-tight mt-0.5 font-mono">
+              <%= stats && stats.totalFine > 0 ? stats.totalFine.toLocaleString('vi-VN') + ' đ' : '0 đ' %>
+            </div>
+            <span class="text-[11px] text-rose-600 font-medium flex items-center mt-0.5">
+              <svg class="w-3 h-3 mr-0.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              <%= totalOverdue %> phiếu quá hạn tích lũy
+            </span>
+          </div>
+        </div>
+
+      </div><!-- end KPI grid -->
+
+      <!-- 2 DETAIL CARDS -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- LEFT: Top 5 sách được mượn nhiều nhất -->
+        <div class="card-glass p-6 flex flex-col justify-between shadow-lg">
+          <div>
+            <div class="flex items-center justify-between pb-4 border-b border-slate-200/70">
+              <div class="flex items-center space-x-2.5">
+                <span class="text-xl">🏆</span>
+                <h3 class="font-bold text-slate-800 text-sm tracking-tight">Top 5 sách được mượn nhiều nhất</h3>
+              </div>
+              <span class="text-[11px] text-slate-500 font-medium bg-slate-100/80 px-2.5 py-1 rounded-full border border-slate-200/60">Xếp hạng theo lượt</span>
+            </div>
+
+            <div class="divide-y divide-slate-100/90 mt-1">
+              <% if (topBooks && topBooks.length > 0) { %>
+                <% topBooks.forEach(function(book, idx) { %>
+                  <%
+                    let badgeStyle = '';
+                    if      (idx === 0) badgeStyle = 'background:linear-gradient(to right,#fbbf24,#f59e0b);color:#fff;';
+                    else if (idx === 1) badgeStyle = 'background:linear-gradient(to right,#d1d5db,#9ca3af);color:#374151;';
+                    else if (idx === 2) badgeStyle = 'background:linear-gradient(to right,#b45309,#92400e);color:#fff;';
+                    else                badgeStyle = 'background:#e2e8f0;color:#475569;';
+                  %>
+                  <div class="py-3.5 flex items-center justify-between hover:bg-white/40 px-2 rounded-xl transition-colors">
+                    <div class="flex items-center space-x-3.5">
+                      <span class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shadow-sm flex-shrink-0" style="<%= badgeStyle %>">#<%= idx+1 %></span>
+                      <div>
+                        <h4 class="text-sm font-semibold text-slate-900 line-clamp-1"><%= book.title %></h4>
+                        <p class="text-xs text-slate-500 mt-0.5"><%= book.author || 'N/A' %></p>
+                      </div>
+                    </div>
+                    <span class="px-3 py-1 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-full shadow-sm flex-shrink-0">
+                      <%= book.borrowCount %> lần
+                    </span>
+                  </div>
+                <% }); %>
+              <% } else { %>
+                <div class="py-12 text-center text-slate-400">
+                  <div class="text-3xl mb-2">📚</div>
+                  <div class="text-sm">Chưa có dữ liệu mượn sách</div>
+                </div>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-200/60 mt-2 flex items-center justify-between text-xs text-slate-500">
+            <span>Thống kê toàn bộ lịch sử mượn trả</span>
+            <a href="/admin/books" class="text-indigo-600 hover:text-indigo-800 font-semibold">Xem kho sách →</a>
+          </div>
+        </div>
+
+        <!-- RIGHT: Tình trạng phiếu mượn -->
+        <div class="card-glass p-6 flex flex-col justify-between shadow-lg">
+          <div>
+            <div class="flex items-center justify-between pb-4 border-b border-slate-200/70">
+              <div class="flex items-center space-x-2.5">
+                <span class="text-xl">📊</span>
+                <h3 class="font-bold text-slate-800 text-sm tracking-tight">Tình trạng phiếu mượn</h3>
+              </div>
+              <span class="text-[11px] text-slate-500 font-medium bg-slate-100/80 px-2.5 py-1 rounded-full border border-slate-200/60">Tỷ lệ luân chuyển</span>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="my-5 p-4 rounded-xl bg-white/60 border border-slate-200/70">
+              <div class="flex justify-between text-xs font-semibold text-slate-700 mb-2">
+                <span>Phân bố trạng thái mượn trả</span>
+                <span><%= totalAll %> phiếu tổng</span>
+              </div>
+              <div class="w-full h-3 rounded-full overflow-hidden flex bg-slate-100 shadow-inner">
+                <div style="width:<%= pctBorrowing %>%;" class="bg-blue-600 h-full" title="Đang mượn: <%= totalBorrowing %>"></div>
+                <div style="width:<%= pctOverdue %>%;" class="bg-red-600 h-full" title="Quá hạn: <%= totalOverdue %>"></div>
+                <div style="width:<%= pctReturned %>%;" class="bg-emerald-600 h-full" title="Đã trả: <%= totalReturned %>"></div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-slate-500 mt-2 pt-1 border-t border-slate-100">
+                <span class="flex items-center"><span class="w-2 h-2 rounded-full bg-blue-600 mr-1.5"></span>Đang mượn (<%= pctBorrowing %>%)</span>
+                <span class="flex items-center"><span class="w-2 h-2 rounded-full bg-red-600 mr-1.5"></span>Quá hạn (<%= pctOverdue %>%)</span>
+                <span class="flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-600 mr-1.5"></span>Đã trả (<%= pctReturned %>%)</span>
+              </div>
+            </div>
+
+            <!-- Status rows -->
+            <div class="space-y-3.5 mt-2">
+              <!-- Đang mượn -->
+              <div class="flex items-center justify-between p-3.5 rounded-xl bg-blue-50/50 border border-blue-100/80 hover:bg-blue-50/80 transition-colors">
+                <div class="flex items-center space-x-3">
+                  <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm shadow-sm">🔵</div>
+                  <div>
+                    <span class="text-sm font-semibold text-slate-800 block">Đang mượn</span>
+                    <span class="text-[11px] text-slate-500">Sách còn trong thời hạn mượn 7 ngày</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="text-lg font-bold text-blue-600 font-mono"><%= totalBorrowing %></span>
+                  <span class="text-xs text-slate-500 block">phiếu</span>
+                </div>
+              </div>
+              <!-- Quá hạn -->
+              <div class="flex items-center justify-between p-3.5 rounded-xl bg-red-50/50 border border-red-100/80 hover:bg-red-50/80 transition-colors">
+                <div class="flex items-center space-x-3">
+                  <div class="w-8 h-8 rounded-lg bg-red-600 text-white flex items-center justify-center text-sm shadow-sm">🔴</div>
+                  <div>
+                    <span class="text-sm font-semibold text-slate-800 block">Quá hạn</span>
+                    <span class="text-[11px] text-rose-600 font-medium">Cần xử lý nhắc nhở thu hồi sách</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="text-lg font-bold text-[#dc2626] font-mono"><%= totalOverdue %></span>
+                  <span class="text-xs text-rose-500 block">phiếu trễ</span>
+                </div>
+              </div>
+              <!-- Đã trả -->
+              <div class="flex items-center justify-between p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-100/80 hover:bg-emerald-50/80 transition-colors">
+                <div class="flex items-center space-x-3">
+                  <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-sm shadow-sm">🟢</div>
+                  <div>
+                    <span class="text-sm font-semibold text-slate-800 block">Đã trả</span>
+                    <span class="text-[11px] text-slate-500">Đã hoàn trả về kho lưu trữ an toàn</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="text-lg font-bold text-emerald-600 font-mono"><%= totalReturned %></span>
+                  <span class="text-xs text-slate-500 block">lượt hoàn tất</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Total -->
+            <div class="mt-4 pt-3 border-t-2 border-dashed border-slate-200 flex items-center justify-between px-2">
+              <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Tổng phiếu đã phát sinh:</span>
+              <div class="flex items-baseline space-x-1.5">
+                <span class="text-2xl font-black text-slate-900 font-mono"><%= totalAll %></span>
+                <span class="text-xs font-semibold text-slate-500">lượt phiếu</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-200/60 mt-4 flex items-center justify-between text-xs text-slate-500">
+            <span>Tự động cập nhật theo thời gian thực</span>
+            <a href="/admin/borrowings" class="text-indigo-600 hover:text-indigo-800 font-semibold">Chi tiết danh sách →</a>
+          </div>
+        </div>
+
+      </div><!-- end 2-col grid -->
+
+    </main>
+  </div>
+
+</body>
+</html>

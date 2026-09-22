@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= student ? 'Sửa học sinh' : 'Thêm học sinh' %> · <%= libraryName %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; }
+    body {
+      background: linear-gradient(135deg, #e8edf8 0%, #ede8f8 50%, #e8f0fa 100%);
+      background-attachment: fixed; min-height: 100vh; color: #334155;
+    }
+
+    /* Navbar */
+    .navbar-admin {
+      background: rgba(79,70,229,0.90); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      box-shadow: 0 4px 24px rgba(79,70,229,0.25);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 230px; min-width: 230px;
+      background: linear-gradient(180deg,#1e293b 0%,#0f172a 100%);
+      border-right: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+      padding: 20px 0; display: flex; flex-direction: column; z-index: 50;
+    }
+    .sidebar-menu { display: flex; flex-direction: column; gap: 3px; }
+    .nav-link {
+      color: rgba(255,255,255,0.60); border-radius: 8px;
+      border-left: 3px solid transparent; margin: 2px 10px;
+      transition: all 0.2s ease;
+      display: flex; align-items: center; gap: 12px;
+      padding: 9px 16px; font-size: 13px; font-weight: 500; text-decoration: none;
+    }
+    .nav-link:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); transform: translateX(4px); border-left-color: rgba(99,102,241,0.5); }
+    .nav-link.active { background: linear-gradient(90deg,rgba(79,70,229,0.38) 0%,transparent 100%); border-left: 3px solid #6366f1; color: #fff; font-weight: 600; }
+    .nav-icon { font-size: 16px; width: 20px; display: flex; justify-content: center; align-items: center; }
+    .nav-icon.dashboard{color:#818cf8;} .nav-icon.books{color:#34d399;} .nav-icon.students{color:#60a5fa;}
+    .nav-icon.borrow{color:#a78bfa;} .nav-icon.return{color:#4ade80;} .nav-icon.borrowings{color:#facc15;} .nav-icon.reports{color:#f87171;}
+    .sidebar-group-label { font-size:10px; text-transform:uppercase; color:rgba(255,255,255,0.35); letter-spacing:1.5px; font-weight:700; padding:14px 20px 6px; border-top:1px solid rgba(255,255,255,0.06); margin-top:8px; }
+
+    /* Glass cards */
+    .glass-card { background:rgba(255,255,255,0.72); backdrop-filter:blur(16px) saturate(180%); -webkit-backdrop-filter:blur(16px) saturate(180%); border:1px solid rgba(255,255,255,0.85); box-shadow:0 12px 36px rgba(79,70,229,0.08),0 2px 10px rgba(0,0,0,0.04); border-radius:16px; }
+    .glass-inner { background:rgba(255,255,255,0.55); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.75); border-radius:12px; }
+
+    /* Buttons */
+    .btn { transition:all 0.2s cubic-bezier(0.4,0,0.2,1); display:inline-flex; align-items:center; justify-content:center; font-weight:600; }
+    .btn-primary { background:linear-gradient(135deg,#6366f1 0%,#4f46e5 100%); box-shadow:0 4px 14px rgba(79,70,229,0.35); border:none; color:#fff; }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(79,70,229,0.45); }
+    .btn-primary:active { transform:translateY(1px) scale(0.98); }
+    .btn-ghost { background:rgba(255,255,255,0.7); border:1.5px solid #cbd5e1; color:#475569; }
+    .btn-ghost:hover { background:#fff; color:#1e293b; border-color:#94a3b8; transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.06); }
+
+    /* Inputs */
+    .form-input, .form-select {
+      background:rgba(255,255,255,0.85); border:1.5px solid rgba(203,213,225,0.85);
+      border-radius:10px; transition:all 0.2s ease; backdrop-filter:blur(4px);
+      padding:10px 14px; font-size:14px; color:#1e293b; width:100%;
+    }
+    .form-input:focus, .form-select:focus { background:rgba(255,255,255,0.98); border-color:#4f46e5; box-shadow:0 0 0 3.5px rgba(79,70,229,0.16); outline:none; }
+    .form-input::placeholder { color:#94a3b8; }
+
+    /* Badge pill */
+    .badge-pill { border-radius:20px; padding:3px 10px; font-size:11px; font-weight:600; }
+
+    /* Mode toggle */
+    .btn-mode-toggle { transition:all 0.2s ease; }
+    .btn-mode-toggle.active { background:#4f46e5; color:#fff; box-shadow:0 4px 12px rgba(79,70,229,0.3); }
+
+    /* Page animation */
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)} }
+    .page-content { animation:fadeInUp 0.35s ease-out both; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar{width:6px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:rgba(79,70,229,0.3);border-radius:3px;}
+
+    /* Navbar user */
+    .nav-user-pill { display:flex;align-items:center;gap:8px;padding:5px 12px;border-radius:20px;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.20);font-size:12px;color:rgba(255,255,255,0.90); }
+    .btn-logout { display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.25);color:rgba(255,255,255,0.90);font-size:12px;font-weight:600;background:rgba(255,255,255,0.10);cursor:pointer;transition:all 0.2s;text-decoration:none; }
+    .btn-logout:hover { background:rgba(255,255,255,0.20);color:#fff; }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- ===== NAVBAR ===== -->
+  <header class="navbar-admin sticky top-0 z-50 h-14 w-full flex items-center justify-between px-5 text-white">
+    <a href="/admin" class="flex items-center gap-3 no-underline text-white">
+      <div class="w-9 h-9 rounded-xl bg-white/15 border border-white/30 flex items-center justify-center text-xl">📚</div>
+      <span class="font-bold text-[15px] tracking-wide"><%= libraryName %></span>
+    </a>
+    <div class="flex items-center gap-4">
+      <div class="nav-user-pill">
+        <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;flex-shrink:0;display:inline-block;"></span>
+        <span>Thủ thư: <strong class="text-white"><%= user ? user.fullName : 'Admin' %></strong></span>
+      </div>
+      <form action="/logout" method="POST" style="display:inline;">
+        <button type="submit" class="btn-logout">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Đăng xuất
+        </button>
+      </form>
+    </div>
+  </header>
+
+  <!-- ===== LAYOUT ===== -->
+  <div class="flex flex-1 w-full overflow-hidden">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+      <div class="sidebar-menu">
+        <a href="/admin" class="nav-link">
+          <span class="nav-icon dashboard"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect height="9" rx="1" width="7" x="3" y="3"/><rect height="5" rx="1" width="7" x="14" y="3"/><rect height="9" rx="1" width="7" x="14" y="12"/><rect height="5" rx="1" width="7" x="3" y="16"/></svg></span>
+          <span>Dashboard</span>
+        </a>
+        <div class="sidebar-group-label">QUẢN LÝ</div>
+        <a href="/admin/books" class="nav-link">
+          <span class="nav-icon books"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></span>
+          <span>Quản lý sách</span>
+        </a>
+        <a href="/admin/students" class="nav-link active">
+          <span class="nav-icon students"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span>
+          <span>Quản lý học sinh</span>
+        </a>
+        <div class="sidebar-group-label">NGHIỆP VỤ</div>
+        <a href="/admin/borrow" class="nav-link">
+          <span class="nav-icon borrow"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="16"/><line x1="8" x2="16" y1="12" y2="12"/></svg></span>
+          <span>Mượn sách</span>
+        </a>
+        <a href="/admin/return" class="nav-link">
+          <span class="nav-icon return"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 010 11H11"/></svg></span>
+          <span>Trả sách</span>
+        </a>
+        <a href="/admin/borrowings" class="nav-link">
+          <span class="nav-icon borrowings"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect height="16" rx="2" width="16" x="4" y="4"/><path d="M9 4V2h6v2"/><path d="m9 11 2 2 4-4"/><path d="m9 16 2 2 4-4"/></svg></span>
+          <span>Danh sách mượn</span>
+        </a>
+        <div class="sidebar-group-label">BÁO CÁO</div>
+        <a href="/admin/reports" class="nav-link">
+          <span class="nav-icon reports"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
+          <span>Báo cáo thống kê</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ===== CONTENT ===== -->
+    <main class="flex-1 overflow-y-auto p-6 md:p-8 page-content">
+      <div class="max-w-[580px] mx-auto space-y-6">
+
+        <!-- Breadcrumb + mode pill -->
+        <div class="flex items-center justify-between">
+          <a href="/admin/students" class="btn btn-ghost px-3.5 py-1.5 rounded-lg text-xs font-semibold gap-1.5 shadow-sm">
+            <span>←</span><span>Quay lại danh sách học sinh</span>
+          </a>
+          <div class="glass-inner p-1 flex items-center gap-1 rounded-xl shadow-sm text-xs font-semibold">
+            <span class="text-slate-400 px-2 text-[11px] font-medium uppercase tracking-wider">Chế độ:</span>
+            <span class="px-3 py-1 rounded-lg <%= student ? 'bg-purple-600 text-white' : 'bg-indigo-600 text-white' %>">
+              <%= student ? '✏️ Sửa học sinh' : '➕ Thêm mới' %>
+            </span>
+          </div>
+        </div>
+
+        <!-- Page title -->
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl text-white flex items-center justify-center text-lg shadow-md <%= student ? 'bg-gradient-to-br from-indigo-600 to-purple-700' : 'bg-gradient-to-br from-indigo-500 to-indigo-700' %>">
+            <%= student ? '✏️' : '➕' %>
+          </div>
+          <div>
+            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">
+              <%= student ? 'Sửa thông tin học sinh' : 'Thêm học sinh mới' %>
+            </h1>
+            <p class="text-xs text-slate-500 font-medium mt-0.5">
+              <%= student ? 'Cập nhật thông tin tài khoản cho học sinh ' + student.fullName : 'Tạo tài khoản học sinh mới để cấp quyền mượn sách và theo dõi lịch sử đọc' %>
+            </p>
+          </div>
+        </div>
+
+        <!-- Flash messages -->
+        <% if (success_msg) { %>
+        <div class="flex items-start justify-between gap-3 p-3.5 rounded-xl bg-emerald-50/90 border border-emerald-200/80 text-emerald-800 text-xs shadow-sm">
+          <div class="flex items-center gap-2.5"><span class="text-base">✅</span><span><%= success_msg %></span></div>
+          <button onclick="this.parentElement.style.display='none'" class="text-emerald-700 font-bold text-sm px-1">×</button>
+        </div>
+        <% } %>
+        <% if (error_msg) { %>
+        <div class="flex items-start justify-between gap-3 p-3.5 rounded-xl bg-red-50/90 border border-red-200/80 text-red-800 text-xs shadow-sm">
+          <div class="flex items-center gap-2.5"><span class="text-base">❌</span><span><%= error_msg %></span></div>
+          <button onclick="this.parentElement.style.display='none'" class="text-red-700 font-bold text-sm px-1">×</button>
+        </div>
+        <% } %>
+
+        <!-- ===== FORM CARD ===== -->
+        <div class="glass-card p-6 md:p-8">
+          <form
+            action="<%= student ? '/admin/students/' + student._id + '?_method=PUT' : '/admin/students/add' %>"
+            method="POST"
+            class="space-y-6"
+          >
+            <% if (student) { %>
+            <input type="hidden" name="_method" value="PUT">
+            <% } %>
+
+            <!-- Card header badge -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-200/70">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-600">Hồ sơ học sinh</span>
+              </div>
+              <span class="badge-pill <%= student ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-indigo-100 text-indigo-700 border border-indigo-200' %>">
+                <%= student ? 'Đang chỉnh sửa: ' + student.studentId : 'Tạo mới bản ghi' %>
+              </span>
+            </div>
+
+            <!-- Form fields -->
+            <div class="space-y-5">
+
+              <!-- Mã học sinh -->
+              <div>
+                <label class="block text-[13px] font-semibold text-slate-700 mb-1.5" for="input-studentId">
+                  Mã học sinh <span class="text-red-500 font-bold">*</span>
+                </label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-sm">🆔</span>
+                  <input class="form-input pl-10 font-mono font-bold text-indigo-700"
+                    id="input-studentId" name="studentId" type="text"
+                    placeholder="VD: HS007"
+                    value="<%= student ? student.studentId : '' %>"
+                    <%= student ? 'readonly' : 'required' %>>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1 pl-1">
+                  <%= student ? 'Mã học sinh không thể thay đổi sau khi tạo.' : 'Mã định danh duy nhất của học sinh trong hệ thống thư viện.' %>
+                </p>
+              </div>
+
+              <!-- Họ và tên -->
+              <div>
+                <label class="block text-[13px] font-semibold text-slate-700 mb-1.5" for="input-fullName">
+                  Họ và tên <span class="text-red-500 font-bold">*</span>
+                </label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-sm">👤</span>
+                  <input class="form-input pl-10"
+                    id="input-fullName" name="fullName" type="text"
+                    placeholder="Nhập họ và tên học sinh"
+                    value="<%= student ? student.fullName : '' %>" required>
+                </div>
+              </div>
+
+              <!-- Lớp & Mật khẩu -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Lớp -->
+                <div>
+                  <label class="block text-[13px] font-semibold text-slate-700 mb-1.5" for="input-class">
+                    Lớp <span class="text-slate-400 font-normal text-xs">(Tùy chọn)</span>
+                  </label>
+                  <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-sm">🏫</span>
+                    <input class="form-input pl-10"
+                      id="input-class" name="studentClass" type="text"
+                      placeholder="VD: 10A1, 11B2..."
+                      value="<%= student ? student.class : '' %>">
+                  </div>
+                </div>
+                <!-- Mật khẩu -->
+                <div>
+                  <label class="block text-[13px] font-semibold text-slate-700 mb-1.5" for="input-password">
+                    <% if (student) { %>
+                      Mật khẩu mới <span class="text-slate-400 font-normal text-xs">(để trống = giữ nguyên)</span>
+                    <% } else { %>
+                      Mật khẩu khởi tạo <span class="text-red-500 font-bold">*</span>
+                    <% } %>
+                  </label>
+                  <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-sm">🔑</span>
+                    <input class="form-input pl-10 font-mono"
+                      id="input-password" name="password" type="text"
+                      placeholder="<%= student ? 'Để trống nếu không đổi' : '123456' %>"
+                      value="<%= student ? '' : '123456' %>"
+                      <%= student ? '' : 'required' %>>
+                  </div>
+                  <p class="text-xs text-slate-500 mt-1 pl-1">
+                    <% if (!student) { %>Mặc định: 123456. Học sinh có thể đổi sau khi đăng nhập.<% } %>
+                  </p>
+                </div>
+              </div>
+
+            </div><!-- end fields -->
+
+            <!-- Action buttons -->
+            <div class="pt-5 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div class="flex items-center gap-2 text-xs text-slate-500 order-2 sm:order-1">
+                <span class="text-slate-400 text-sm">ℹ️</span>
+                <span>Các trường có dấu <span class="text-red-500 font-bold">*</span> là bắt buộc nhập</span>
+              </div>
+              <div class="flex items-center gap-3 w-full sm:w-auto justify-end order-1 sm:order-2">
+                <a href="/admin/students" class="btn btn-ghost px-5 py-2.5 rounded-lg text-xs font-bold text-slate-600 shadow-sm w-full sm:w-auto">
+                  Hủy bỏ
+                </a>
+                <button type="submit" class="btn btn-primary px-6 py-2.5 rounded-lg text-xs font-bold shadow-md w-full sm:w-auto gap-2">
+                  <span>💾</span>
+                  <span><%= student ? 'Cập nhật học sinh' : 'Lưu học sinh' %></span>
+                </button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+        <!-- End form card -->
+
+        <!-- Info box -->
+        <div class="p-4 rounded-xl glass-inner border border-white/80 shadow-sm flex items-start gap-3 text-xs text-slate-600">
+          <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm shrink-0">ℹ️</div>
+          <div class="leading-relaxed">
+            <strong class="text-slate-800 font-semibold">Quy định tài khoản học sinh:</strong>
+            Mỗi học sinh được phép mượn tối đa <strong>3 cuốn sách</strong> trong thời hạn <strong>7 ngày</strong>.
+            Khi quên mật khẩu, thủ thư có thể bấm nút <strong>Reset</strong> trên danh sách để khôi phục về mặc định <code class="bg-slate-100 px-1 rounded">123456</code>.
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+  </div><!-- end layout -->
+
+</body>
+</html>

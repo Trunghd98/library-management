@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard · <%= libraryName %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+    body {
+      background: linear-gradient(135deg, #e8edf8 0%, #ede8f8 50%, #e8f0fa 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      color: #1e293b;
+      overflow-x: hidden;
+    }
+
+    /* Glassmorphism */
+    .glass-card {
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(14px) saturate(180%);
+      -webkit-backdrop-filter: blur(14px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.85);
+      box-shadow: 0 8px 32px rgba(79,70,229,0.08), 0 2px 8px rgba(0,0,0,0.04);
+      border-radius: 16px;
+    }
+    .card-hover { transition: transform 0.28s ease, box-shadow 0.28s ease; }
+    .card-hover:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 16px 36px rgba(79,70,229,0.14), 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    /* Navbar */
+    .navbar-admin {
+      background: rgba(79,70,229,0.90);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.20);
+      box-shadow: 0 4px 24px rgba(79,70,229,0.25);
+      position: sticky; top: 0; z-index: 100; height: 56px;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+      border-right: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+      width: 230px;
+      min-height: calc(100vh - 56px);
+    }
+
+    /* Nav links */
+    .nav-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 14px;
+      color: rgba(255,255,255,0.60);
+      font-size: 13px; font-weight: 500;
+      border-radius: 8px;
+      border-left: 3px solid transparent;
+      margin: 3px 10px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .nav-link:hover {
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.92);
+      transform: translateX(3px);
+      border-left-color: rgba(99,102,241,0.5);
+    }
+    .nav-link.active {
+      background: linear-gradient(90deg, rgba(79,70,229,0.38) 0%, rgba(79,70,229,0.08) 100%);
+      border-left: 3px solid #6366f1;
+      color: #ffffff; font-weight: 600;
+      text-shadow: 0 0 12px rgba(99,102,241,0.5);
+    }
+    .group-label {
+      font-size: 10px; text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 1.5px; font-weight: 700;
+      padding: 14px 14px 6px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      margin-top: 8px;
+    }
+
+    /* Action buttons */
+    .btn-primary-action {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      box-shadow: 0 4px 14px rgba(79,70,229,0.28);
+      color: #fff; transition: all 0.2s ease;
+    }
+    .btn-primary-action:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(79,70,229,0.42); }
+    .btn-success-action {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      box-shadow: 0 4px 14px rgba(22,163,74,0.28);
+      color: #fff; transition: all 0.2s ease;
+    }
+    .btn-success-action:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(22,163,74,0.42); }
+    .btn-danger-action {
+      background: linear-gradient(135deg, #f87171, #dc2626);
+      box-shadow: 0 4px 14px rgba(220,38,38,0.28);
+      color: #fff; transition: all 0.2s ease;
+    }
+    .btn-danger-action:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(220,38,38,0.42); }
+
+    /* Badges */
+    .badge-borrowing { background-color: #2563eb; color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,0.35); }
+    .badge-overdue   { background-color: #dc2626; color: #fff; box-shadow: 0 2px 8px rgba(220,38,38,0.35); }
+    .badge-returned  { background-color: #16a34a; color: #fff; box-shadow: 0 2px 8px rgba(22,163,74,0.35); }
+    .badge-warning   { background-color: #d97706; color: #fff; box-shadow: 0 2px 8px rgba(217,119,6,0.35); }
+
+    /* Overdue row */
+    .table-overdue-row { background: rgba(220,38,38,0.05); }
+    .table-overdue-row:hover { background: rgba(220,38,38,0.09) !important; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(79,70,229,0.3); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(79,70,229,0.6); }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .page-content { animation: fadeInUp 0.4s ease both; }
+    .kpi-card:nth-child(1) { animation: fadeInUp 0.35s ease 0.05s both; }
+    .kpi-card:nth-child(2) { animation: fadeInUp 0.35s ease 0.10s both; }
+    .kpi-card:nth-child(3) { animation: fadeInUp 0.35s ease 0.15s both; }
+    .kpi-card:nth-child(4) { animation: fadeInUp 0.35s ease 0.20s both; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- ===== NAVBAR ===== -->
+  <header class="navbar-admin px-6 flex items-center justify-between text-white">
+    <!-- Brand -->
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-lg shadow-inner border border-white/25">📚</div>
+      <div class="flex flex-col">
+        <span class="font-bold text-sm tracking-wide leading-tight"><%= libraryName %></span>
+      </div>
+    </div>
+    <!-- Right: user + logout -->
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full border border-white/20">
+        <div class="w-6 h-6 rounded-full bg-indigo-300/30 flex items-center justify-center text-xs font-semibold text-white">👤</div>
+        <span class="text-xs font-medium text-white/95">Thủ thư: <strong class="font-semibold"><%= user ? user.fullName : 'Admin' %></strong></span>
+        <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block ml-1 shadow-[0_0_8px_#34d399]"></span>
+      </div>
+      <form action="/logout" method="POST" style="display:inline;">
+        <button type="submit" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/30 text-white/90 hover:text-white hover:bg-white/15 hover:border-white/60 text-xs font-medium transition-all duration-200">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          <span>Đăng xuất</span>
+        </button>
+      </form>
+    </div>
+  </header>
+
+  <!-- ===== MAIN WRAPPER ===== -->
+  <div class="flex flex-1">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar flex flex-col justify-between py-4 select-none shrink-0">
+      <div>
+        <a href="/admin" class="nav-link active">
+          <svg class="w-5 h-5 text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+          <span>Dashboard</span>
+        </a>
+
+        <div class="group-label">QUẢN LÝ</div>
+        <a href="/admin/books" class="nav-link">
+          <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+          <span>Quản lý sách</span>
+        </a>
+        <a href="/admin/students" class="nav-link">
+          <svg class="w-5 h-5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+          <span>Quản lý học sinh</span>
+        </a>
+
+        <div class="group-label">NGHIỆP VỤ</div>
+        <a href="/admin/borrow" class="nav-link">
+          <svg class="w-5 h-5 text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span>Mượn sách</span>
+        </a>
+        <a href="/admin/return" class="nav-link">
+          <svg class="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+          <span>Trả sách</span>
+        </a>
+        <a href="/admin/borrowings" class="nav-link">
+          <svg class="w-5 h-5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+          <span>Danh sách mượn</span>
+        </a>
+
+        <div class="group-label">BÁO CÁO</div>
+        <a href="/admin/reports" class="nav-link">
+          <svg class="w-5 h-5 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+          <span>Báo cáo thống kê</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ===== CONTENT ===== -->
+    <main class="flex-1 p-7 overflow-y-auto page-content">
+
+      <!-- Flash messages -->
+      <% if (success_msg) { %>
+      <div class="mb-5 p-3.5 px-4 rounded-xl flex items-center justify-between border bg-emerald-50/90 border-emerald-200/90 text-emerald-800 shadow-sm backdrop-blur-md">
+        <span class="flex items-center gap-2.5 text-xs font-medium"><span class="text-base">✅</span> <span><%= success_msg %></span></span>
+        <button onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-900 text-lg leading-none font-bold px-2">×</button>
+      </div>
+      <% } %>
+      <% if (error_msg) { %>
+      <div class="mb-5 p-3.5 px-4 rounded-xl flex items-center justify-between border bg-red-50/90 border-red-200/90 text-red-800 shadow-sm backdrop-blur-md">
+        <span class="flex items-center gap-2.5 text-xs font-medium"><span class="text-base">❌</span> <span><%= error_msg %></span></span>
+        <button onclick="this.parentElement.remove()" class="text-red-700 hover:text-red-900 text-lg leading-none font-bold px-2">×</button>
+      </div>
+      <% } %>
+
+      <!-- Tiêu đề -->
+      <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Tổng Quan Hệ Thống</h1>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200">Admin Portal</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Chào mừng quay trở lại! Dưới đây là tình trạng hoạt động mượn trả và sách trong thư viện hôm nay.</p>
+        </div>
+        <div class="flex items-center gap-2 self-start md:self-auto bg-white/70 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white shadow-sm text-xs text-slate-600 font-medium">
+          <span class="text-indigo-600 font-semibold">📅 Hôm nay:</span>
+          <span id="currentDateText"></span>
+        </div>
+      </div>
+
+      <!-- ===== 4 KPI CARDS ===== -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-7">
+
+        <!-- Card 1: Tổng số sách -->
+        <div class="kpi-card glass-card card-hover p-5 flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Tổng số sách</span>
+            <span class="text-3xl font-extrabold text-slate-800 tracking-tight"><%= totalBooks %></span>
+            <span class="text-[11px] text-emerald-600 font-medium mt-1">📚 Đầu sách hiện có</span>
+          </div>
+          <div class="w-12 h-12 rounded-full flex items-center justify-center text-xl shadow-md text-white shrink-0" style="background:linear-gradient(135deg,rgb(129,140,248),rgb(79,70,229));box-shadow:rgba(79,70,229,0.35) 0px 4px 14px;">📚</div>
+        </div>
+
+        <!-- Card 2: Học sinh -->
+        <div class="kpi-card glass-card card-hover p-5 flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Học sinh</span>
+            <span class="text-3xl font-extrabold text-slate-800 tracking-tight"><%= totalStudents %></span>
+            <span class="text-[11px] text-indigo-600 font-medium mt-1">👥 Đã đăng ký</span>
+          </div>
+          <div class="w-12 h-12 rounded-full flex items-center justify-center text-xl shadow-md text-white shrink-0" style="background:linear-gradient(135deg,rgb(74,222,128),rgb(22,163,74));box-shadow:rgba(22,163,74,0.35) 0px 4px 14px;">👥</div>
+        </div>
+
+        <!-- Card 3: Đang mượn -->
+        <div class="kpi-card glass-card card-hover p-5 flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Đang mượn</span>
+            <span class="text-3xl font-extrabold text-slate-800 tracking-tight"><%= activeBorrowings %></span>
+            <span class="text-[11px] text-amber-600 font-medium mt-1">⏱️ Hạn tối đa 7 ngày</span>
+          </div>
+          <div class="w-12 h-12 rounded-full flex items-center justify-center text-xl shadow-md text-white shrink-0" style="background:linear-gradient(135deg,rgb(251,191,36),rgb(217,119,6));box-shadow:rgba(217,119,6,0.35) 0px 4px 14px;">📋</div>
+        </div>
+
+        <!-- Card 4: Quá hạn -->
+        <div class="kpi-card glass-card card-hover p-5 flex items-center justify-between border-red-200/70">
+          <div class="flex flex-col">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Quá hạn</span>
+            <span class="text-3xl font-extrabold tracking-tight" style="color:rgb(220,38,38);"><%= overdueBorrowings %></span>
+            <span class="text-[11px] text-red-600 font-medium mt-1">⚠️ Cần xử lý</span>
+          </div>
+          <div class="w-12 h-12 rounded-full flex items-center justify-center text-xl shadow-md text-white shrink-0" style="background:linear-gradient(135deg,rgb(248,113,113),rgb(220,38,38));box-shadow:rgba(220,38,38,0.35) 0px 4px 14px;">⚠️</div>
+        </div>
+
+      </section>
+
+      <!-- ===== 3 NÚT HÀNH ĐỘNG NHANH ===== -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-7">
+
+        <a href="/admin/borrow" class="btn-primary-action rounded-2xl p-4 flex items-center justify-between no-underline group cursor-pointer">
+          <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center text-xl shadow-inner border border-white/30">➕</div>
+            <div>
+              <div class="font-bold text-sm text-white tracking-wide">Tạo phiếu mượn</div>
+              <div class="text-[11px] text-white/80 mt-0.5">Lập phiếu cho học sinh mượn sách mới</div>
+            </div>
+          </div>
+          <span class="text-lg text-white/70 group-hover:translate-x-1.5 group-hover:text-white transition-transform duration-200">➔</span>
+        </a>
+
+        <a href="/admin/return" class="btn-success-action rounded-2xl p-4 flex items-center justify-between no-underline group cursor-pointer">
+          <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center text-xl shadow-inner border border-white/30">✓</div>
+            <div>
+              <div class="font-bold text-sm text-white tracking-wide">Xác nhận trả sách</div>
+              <div class="text-[11px] text-white/80 mt-0.5">Thu hồi sách và kiểm tra hạn phạt trả trễ</div>
+            </div>
+          </div>
+          <span class="text-lg text-white/70 group-hover:translate-x-1.5 group-hover:text-white transition-transform duration-200">➔</span>
+        </a>
+
+        <a href="/admin/borrowings?status=overdue" class="btn-danger-action rounded-2xl p-4 flex items-center justify-between no-underline group cursor-pointer">
+          <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center text-xl shadow-inner border border-white/30">⚠️</div>
+            <div>
+              <div class="font-bold text-sm text-white tracking-wide">Xem sách quá hạn</div>
+              <div class="text-[11px] text-white/80 mt-0.5">Kiểm tra <%= overdueBorrowings %> phiếu cần xử lý thu hồi</div>
+            </div>
+          </div>
+          <span class="text-lg text-white/70 group-hover:translate-x-1.5 group-hover:text-white transition-transform duration-200">➔</span>
+        </a>
+
+      </section>
+
+      <!-- ===== BẢNG PHIẾU MƯỢN GẦN ĐÂY ===== -->
+      <section class="glass-card overflow-hidden">
+
+        <!-- Card header -->
+        <div class="p-5 px-6 border-b border-slate-200/70 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <span class="text-lg">📋</span>
+            <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Phiếu mượn gần đây</h2>
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">5 phiếu mới nhất</span>
+          </div>
+          <a href="/admin/borrowings" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
+            <span>Xem tất cả danh sách</span><span>→</span>
+          </a>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-indigo-50/60 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
+                <th class="py-3.5 px-6">Học sinh</th>
+                <th class="py-3.5 px-6">Sách mượn</th>
+                <th class="py-3.5 px-6">Ngày mượn</th>
+                <th class="py-3.5 px-6">Hạn trả</th>
+                <th class="py-3.5 px-6 text-center">Trạng thái</th>
+                <th class="py-3.5 px-6 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200/60 text-[13px] text-slate-700">
+              <% if (recentBorrowings && recentBorrowings.length > 0) { %>
+                <% recentBorrowings.forEach(function(b) { %>
+                  <%
+                    const now = new Date();
+                    const due = b.dueDate ? new Date(b.dueDate) : null;
+                    const diffDays = due ? Math.ceil((due - now) / (1000*60*60*24)) : null;
+                    const isOverdue = b.status === 'overdue';
+                    const isWarning = b.status === 'borrowing' && diffDays !== null && diffDays <= 2 && diffDays >= 0;
+                    function fmtD(d){ if(!d)return'-'; return new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+                  %>
+                  <tr class="<%= isOverdue ? 'table-overdue-row transition-colors border-l-4 border-l-red-500' : 'hover:bg-indigo-50/30 transition-colors' %>">
+                    <td class="py-3.5 px-6">
+                      <div class="font-semibold text-slate-800 flex items-center gap-1.5">
+                        <%= b.userId ? b.userId.fullName : 'N/A' %>
+                        <% if (isOverdue) { %><span class="text-xs text-red-500" title="Đã quá hạn">⚠️</span><% } %>
+                      </div>
+                      <div class="text-[11px] font-mono <%= isOverdue ? 'text-red-700/70' : 'text-slate-400' %>">
+                        Mã: <%= b.userId ? b.userId.studentId : '' %><%= b.userId && b.userId.class ? ' · Lớp ' + b.userId.class : '' %>
+                      </div>
+                    </td>
+                    <td class="py-3.5 px-6 font-medium text-slate-800"><%= b.bookId ? b.bookId.title : 'N/A' %></td>
+                    <td class="py-3.5 px-6 text-slate-600"><%= fmtD(b.borrowDate) %></td>
+                    <td class="py-3.5 px-6 <%= isOverdue ? 'font-semibold text-red-600' : isWarning ? 'font-semibold text-amber-700' : 'font-medium text-slate-700' %>">
+                      <%= fmtD(b.dueDate) %>
+                    </td>
+                    <td class="py-3.5 px-6 text-center">
+                      <% if (isOverdue) { %>
+                        <span class="badge-overdue inline-block text-[11px] font-semibold px-3 py-1 rounded-full">
+                          Quá hạn<% if(diffDays!==null){ %> <%= Math.abs(diffDays) %> ngày<% } %>
+                        </span>
+                      <% } else if (b.status === 'returned') { %>
+                        <span class="badge-returned inline-block text-[11px] font-semibold px-3 py-1 rounded-full">Đã trả</span>
+                      <% } else if (isWarning) { %>
+                        <span class="badge-warning inline-block text-[11px] font-semibold px-3 py-1 rounded-full">Sắp hạn (Còn <%= diffDays %> ngày)</span>
+                      <% } else { %>
+                        <span class="badge-borrowing inline-block text-[11px] font-semibold px-3 py-1 rounded-full">Đang mượn</span>
+                      <% } %>
+                    </td>
+                    <td class="py-3.5 px-6 text-right">
+                      <% if (b.status === 'returned') { %>
+                        <span class="text-xs text-slate-400 font-medium">Hoàn tất</span>
+                      <% } else if (isOverdue) { %>
+                        <a href="/admin/return" class="inline-flex items-center gap-1 text-xs font-bold text-red-600 hover:text-red-800 hover:underline">Thu hồi gấp</a>
+                      <% } else { %>
+                        <a href="/admin/return" class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline">Trả sách</a>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" class="py-10 text-center text-slate-400 text-sm">Chưa có phiếu mượn nào</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table footer -->
+        <div class="p-3.5 px-6 bg-slate-50/80 border-t border-slate-200/70 flex items-center justify-between text-xs text-slate-500">
+          <div>
+            Đang hiển thị <strong><%= recentBorrowings ? recentBorrowings.length : 0 %></strong> trong tổng số <strong><%= activeBorrowings %></strong> phiếu đang lưu thông
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-2.5 h-2.5 rounded-sm bg-red-100 border border-red-300"></span>
+            <span>Dòng màu đỏ cảnh báo phiếu mượn đã quá hạn</span>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // Hiển thị ngày hôm nay
+    const el = document.getElementById('currentDateText');
+    if (el) {
+      el.textContent = new Date().toLocaleDateString('vi-VN', {
+        weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric'
+      });
+    }
+  </script>
+
+</body>
+</html>

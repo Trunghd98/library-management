@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trả sách · <%= libraryName %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: linear-gradient(135deg,#e8edf8 0%,#ede8f8 50%,#e8f0fa 100%); min-height:100vh; }
+    .glass-panel { background:rgba(255,255,255,0.78); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border:1px solid rgba(255,255,255,0.85); box-shadow:0 10px 25px -5px rgba(99,102,241,0.05),0 8px 10px -6px rgba(0,0,0,0.03); }
+    .glass-nav { background:linear-gradient(90deg,#4f46e5 0%,#4338ca 100%); backdrop-filter:blur(10px); }
+    .glass-input { background:rgba(255,255,255,0.9); border:1px solid #cbd5e1; }
+    .glass-input:focus { background:#fff; border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,0.2); }
+    ::-webkit-scrollbar{width:6px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:rgba(79,70,229,0.3);border-radius:3px;}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .animate-fadein{animation:fadeInUp 0.35s ease-out both;}
+  </style>
+</head>
+<body class="text-slate-800 antialiased flex flex-col min-h-screen">
+
+  <!-- NAVBAR -->
+  <header class="glass-nav sticky top-0 z-40 text-white shadow-md">
+    <div class="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <a href="/admin" class="flex items-center space-x-3 no-underline text-white">
+        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </div>
+        <span class="text-xl font-bold tracking-tight"><%= libraryName %></span>
+      </a>
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-sm">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+          </span>
+          <span class="text-white/80 font-normal">Thủ thư:</span>
+          <span class="font-semibold text-white"><%= user ? user.fullName : 'Admin' %></span>
+        </div>
+        <form action="/logout" method="POST" style="display:inline;">
+          <button type="submit" class="inline-flex items-center space-x-2 px-3.5 py-1.5 text-sm font-medium text-white/90 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition duration-150 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span>Đăng xuất</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <!-- LAYOUT -->
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-gradient-to-b from-slate-900 to-slate-950 text-slate-300 flex-shrink-0 flex flex-col justify-between shadow-2xl border-r border-slate-800">
+      <nav class="px-4 py-6 space-y-6">
+        <div>
+          <a href="/admin" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/60 font-medium transition duration-150 no-underline">
+            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="text-sm">Dashboard</span>
+          </a>
+        </div>
+        <div class="space-y-1">
+          <p class="px-3 text-xs font-bold uppercase tracking-wider text-slate-500">QUẢN LÝ</p>
+          <a href="/admin/books" class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/60 font-medium transition duration-150 no-underline">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="text-sm">Quản lý sách</span>
+          </a>
+          <a href="/admin/students" class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/60 font-medium transition duration-150 no-underline">
+            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="text-sm">Quản lý học sinh</span>
+          </a>
+        </div>
+        <div class="space-y-1">
+          <p class="px-3 text-xs font-bold uppercase tracking-wider text-slate-500">NGHIỆP VỤ</p>
+          <a href="/admin/borrow" class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/60 font-medium transition duration-150 no-underline">
+            <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="text-sm">Mượn sách</span>
+          </a>
+          <!-- ACTIVE: Trả sách -->
+          <a href="/admin/return" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600/90 to-indigo-700 text-white font-semibold shadow-lg border-l-4 border-indigo-400 no-underline">
+            <svg class="w-5 h-5 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="text-sm">Trả sách</span>
+          </a>
+          <a href="/admin/borrowings" class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/60 font-medium transition duration-150 no-underline">
+            <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="text-sm">Danh sách mượn</span>
+          </a>
+        </div>
+        <div class="space-y-1">
+          <p class="px-3 text-xs font-bold uppercase tracking-wider text-slate-500">BÁO CÁO</p>
+          <a href="/admin/reports" class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/60 font-medium transition duration-150 no-underline">
+            <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="text-sm">Báo cáo thống kê</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="flex-1 overflow-y-auto px-6 lg:px-10 py-8">
+      <div class="max-w-7xl mx-auto space-y-6 animate-fadein">
+
+        <!-- Page header -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-2xl">↩️</span>
+              <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Trả Sách</h1>
+            </div>
+            <p class="mt-1 text-sm text-slate-600">Tìm kiếm phiếu mượn của học sinh để tiếp nhận và ghi nhận trả sách vào hệ thống.</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="inline-flex items-center px-3 py-1.5 rounded-lg bg-emerald-100/90 text-emerald-800 text-xs font-semibold border border-emerald-300">
+              <svg class="w-3.5 h-3.5 mr-1 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" fill-rule="evenodd"/></svg>
+              Hệ thống trả sách tự động kích hoạt
+            </span>
+          </div>
+        </div>
+
+        <!-- Flash messages -->
+        <% if (success_msg) { %>
+        <div class="glass-panel rounded-2xl p-4 flex items-center justify-between gap-3 border-l-4 border-emerald-500">
+          <div class="flex items-center gap-3 text-sm text-emerald-800"><span class="text-lg">✅</span><span><%= success_msg %></span></div>
+          <button onclick="this.parentElement.remove()" class="text-emerald-600 font-bold text-lg px-1">×</button>
+        </div>
+        <% } %>
+        <% if (error_msg) { %>
+        <div class="glass-panel rounded-2xl p-4 flex items-center justify-between gap-3 border-l-4 border-red-500">
+          <div class="flex items-center gap-3 text-sm text-red-800"><span class="text-lg">❌</span><span><%= error_msg %></span></div>
+          <button onclick="this.parentElement.remove()" class="text-red-600 font-bold text-lg px-1">×</button>
+        </div>
+        <% } %>
+
+        <!-- Search form -->
+        <div class="glass-panel p-6 rounded-2xl">
+          <form action="/admin/return" method="GET" class="flex flex-col md:flex-row items-center gap-4">
+            <div class="relative flex-1 w-full">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+              </div>
+              <input class="glass-input block w-full pl-11 pr-4 py-3 text-sm rounded-xl focus:outline-none font-medium text-slate-800 placeholder-slate-400"
+                name="search" type="text"
+                placeholder="Nhập mã HS hoặc tên học sinh để tìm phiếu mượn..."
+                value="<%= search || '' %>">
+            </div>
+            <button type="submit"
+              class="w-full md:w-auto inline-flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white text-sm font-semibold rounded-xl shadow-lg transition duration-150 active:scale-95">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+              <span>Tìm kiếm</span>
+            </button>
+            <% if (search) { %>
+            <a href="/admin/return" class="w-full md:w-auto inline-flex items-center justify-center px-4 py-3 bg-white/80 text-slate-600 text-sm font-semibold rounded-xl border border-slate-200 hover:bg-white transition no-underline">
+              Xóa lọc
+            </a>
+            <% } %>
+          </form>
+        </div>
+
+        <!-- Results: No search yet -->
+        <% if (!search) { %>
+        <div class="glass-panel rounded-2xl p-12 text-center">
+          <div class="text-5xl mb-4">🔍</div>
+          <h3 class="text-lg font-semibold text-slate-700 mb-1">Nhập mã HS hoặc tên để tìm phiếu mượn</h3>
+          <p class="text-sm text-slate-500">Hệ thống sẽ hiển thị danh sách sách đang mượn của học sinh đó</p>
+        </div>
+
+        <!-- Results: Student not found -->
+        <% } else if (!foundStudent) { %>
+        <div class="glass-panel rounded-2xl p-12 text-center">
+          <div class="text-5xl mb-4">👤</div>
+          <h3 class="text-lg font-semibold text-slate-700 mb-1">Không tìm thấy học sinh "<%= search %>"</h3>
+          <p class="text-sm text-slate-500">Thử nhập mã HS (vd: HS001) hoặc họ tên chính xác hơn</p>
+        </div>
+
+        <!-- Results: Found student -->
+        <% } else { %>
+        <div class="glass-panel rounded-2xl overflow-hidden border border-white/90">
+
+          <!-- Student info header -->
+          <div class="px-6 py-4 bg-white/50 border-b border-slate-200/80 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+              <%
+                const initials = foundStudent.fullName
+                  ? foundStudent.fullName.split(' ').map(w=>w[0]).slice(-2).join('').toUpperCase()
+                  : '??';
+              %>
+              <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">
+                <%= initials %>
+              </div>
+              <div>
+                <div class="flex items-center space-x-2">
+                  <h2 class="text-base font-bold text-slate-900">
+                    Phiếu mượn của: <%= foundStudent.fullName %> (<%= foundStudent.studentId %>)<%= foundStudent.class ? ' — Lớp ' + foundStudent.class : '' %>
+                  </h2>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                    Đang mượn <%= activeBorrowings.length %> cuốn
+                  </span>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5">Mã học sinh: <%= foundStudent.studentId %></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <% if (activeBorrowings.length > 0) { %>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50/70 border-b border-slate-200/70">
+                  <th class="py-3.5 px-6">Tên Sách</th>
+                  <th class="py-3.5 px-6">Ngày Mượn</th>
+                  <th class="py-3.5 px-6">Hạn Trả</th>
+                  <th class="py-3.5 px-6">Trạng Thái</th>
+                  <th class="py-3.5 px-6">Tiền Phạt Dự Kiến</th>
+                  <th class="py-3.5 px-6 text-center">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <% activeBorrowings.forEach(function(b) { %>
+                  <%
+                    const today    = new Date();
+                    const dueDate  = new Date(b.dueDate);
+                    const isOverdue= today > dueDate;
+                    const overDays = isOverdue ? Math.floor((today - dueDate)/(1000*60*60*24)) : 0;
+                    const fine     = overDays * (parseInt(process.env.FINE_PER_DAY) || 50000);
+                    function fmtD(d){ if(!d)return'—'; return new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+                  %>
+                  <tr class="transition duration-150 <%= isOverdue ? 'hover:bg-red-50/50' : 'hover:bg-white/60' %>"
+                      style="<%= isOverdue ? 'background-color:rgba(220,38,38,0.05);' : '' %>">
+                    <td class="py-4 px-6">
+                      <div class="font-semibold text-sm <%= isOverdue ? 'text-rose-950' : 'text-slate-900' %>">
+                        <%= b.bookId ? b.bookId.title : 'N/A' %>
+                      </div>
+                      <div class="text-xs mt-0.5 <%= isOverdue ? 'text-rose-700/80' : 'text-slate-500' %>">
+                        Tác giả: <%= b.bookId ? b.bookId.author : '—' %>
+                      </div>
+                    </td>
+                    <td class="py-4 px-6 text-sm text-slate-600 font-medium"><%= fmtD(b.borrowDate) %></td>
+                    <td class="py-4 px-6 text-sm font-medium <%= isOverdue ? 'text-rose-700 font-semibold' : 'text-slate-600' %>">
+                      <%= fmtD(b.dueDate) %>
+                    </td>
+                    <td class="py-4 px-6">
+                      <% if (isOverdue) { %>
+                      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 border border-rose-300">
+                        <span class="w-1.5 h-1.5 rounded-full bg-rose-600 mr-1.5 animate-pulse"></span>Quá hạn
+                      </span>
+                      <% } else { %>
+                      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>Đang mượn
+                      </span>
+                      <% } %>
+                    </td>
+                    <td class="py-4 px-6">
+                      <% if (isOverdue && fine > 0) { %>
+                      <div class="text-sm font-bold text-rose-600"><%= fine.toLocaleString('vi-VN') %> đ</div>
+                      <span class="text-[11px] font-medium text-rose-500">(Quá hạn <%= overDays %> ngày)</span>
+                      <% } else { %>
+                      <span class="text-sm text-slate-400 italic">Không có</span>
+                      <% } %>
+                    </td>
+                    <td class="py-4 px-6 text-center">
+                      <form action="/admin/return/<%= b._id %>" method="POST" style="display:inline;"
+                            onsubmit="return confirm('Xác nhận trả sách &quot;<%= b.bookId ? b.bookId.title.replace(/'/g, '') : 'này' %>&quot;?<%= isOverdue ? ' Tiền phạt: ' + fine.toLocaleString('vi-VN') + 'đ' : '' %>');">
+                        <button type="submit"
+                          class="inline-flex items-center space-x-1 px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white text-xs font-semibold rounded-lg shadow-sm hover:shadow-md transition active:scale-95">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"/></svg>
+                          <span>Xác nhận trả</span>
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Table footer -->
+          <div class="px-6 py-3.5 bg-slate-50/80 border-t border-slate-200/80 text-xs text-slate-500 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div class="flex items-center space-x-1.5">
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+              <span>Thời gian xử lý trả sách ghi nhận theo thời gian thực · Phí phạt quá hạn tính tự động <strong>50.000 đ / ngày</strong>.</span>
+            </div>
+            <div class="text-slate-400 text-right">Hiển thị: <%= activeBorrowings.length %> cuốn</div>
+          </div>
+
+          <% } else { %>
+          <!-- No active borrowings -->
+          <div class="p-12 text-center">
+            <div class="text-4xl mb-3">✅</div>
+            <h3 class="text-base font-semibold text-slate-700 mb-1">
+              <%= foundStudent.fullName %> hiện không có sách nào đang mượn
+            </h3>
+            <p class="text-sm text-slate-500">Học sinh đã trả hết tất cả sách.</p>
+          </div>
+          <% } %>
+
+        </div><!-- end results panel -->
+        <% } %>
+
+      </div>
+    </main>
+  </div>
+
+</body>
+</html>
