@@ -235,8 +235,18 @@
                       </td>
 
                       <td class="py-4 px-5">
+                        <%
+                          const lateDays = (!isReturned && b.dueDate && new Date() > new Date(b.dueDate))
+                            ? Math.floor((new Date() - new Date(b.dueDate)) / (1000 * 60 * 60 * 24))
+                            : 0;
+                          const rate = typeof finePerDay !== 'undefined' ? finePerDay : 50000;
+                          const estFine = lateDays > 0 ? lateDays * rate : 0;
+                        %>
                         <% if (b.fine && b.fine > 0) { %>
                         <span class="text-sm font-bold text-rose-600"><%= b.fine.toLocaleString('vi-VN') %> đ</span>
+                        <% } else if (estFine > 0) { %>
+                        <div class="text-sm font-bold text-amber-600"><%= estFine.toLocaleString('vi-VN') %> đ</div>
+                        <div class="text-[11px] text-amber-700/80 font-medium">Tạm tính (<%= lateDays %> ngày)</div>
                         <% } else { %>
                         <span class="text-sm text-slate-400 italic">—</span>
                         <% } %>

@@ -221,7 +221,8 @@ router.get('/borrowings', async (req, res) => {
     .populate('userId', 'fullName studentId class')
     .populate('bookId', 'title author')
     .sort({ createdAt: -1 });
-  res.render('admin/borrowings', { title: 'Danh sách mượn sách', borrowings, status: status || '' });
+  const finePerDay = parseInt(process.env.FINE_PER_DAY || 50000);
+  res.render('admin/borrowings', { title: 'Danh sách mượn sách', borrowings, status: status || '', finePerDay });
 });
 
 // ── BÁO CÁO ────────────────────────────────────────────
