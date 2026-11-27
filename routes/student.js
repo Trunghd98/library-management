@@ -33,7 +33,8 @@ router.get('/my-borrowings', async (req, res) => {
   const { status } = req.query;
   const borrowings = await Borrowing.find({ userId: req.session.user._id })
     .populate('bookId', 'title author category').sort({ createdAt: -1 });
-  res.render('student/my-borrowings', { title: 'Lịch sử mượn sách', borrowings, status: status || '' });
+  const finePerDay = parseInt(process.env.FINE_PER_DAY || 50000);
+  res.render('student/my-borrowings', { title: 'Lịch sử mượn sách', borrowings, status: status || '', finePerDay });
 });
 
 router.get('/notifications', async (req, res) => {

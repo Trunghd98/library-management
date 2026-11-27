@@ -102,6 +102,15 @@
       const cntOverdue = borrowings ? borrowings.filter(b=>b.status==='overdue').length : 0;
       const cntRet     = borrowings ? borrowings.filter(b=>b.status==='returned').length : 0;
       const totalFine  = borrowings ? borrowings.reduce((sum,b)=>sum+(b.fine||0),0) : 0;
+      const rate       = typeof finePerDay !== 'undefined' ? finePerDay : 50000;
+      function calcEstFine(b) {
+        if (b.status === 'returned' || !b.dueDate) return 0;
+        const diff = new Date() - new Date(b.dueDate);
+        if (diff <= 0) return 0;
+        return Math.floor(diff / (1000 * 60 * 60 * 24)) * rate;
+      }
+      const estTotalFine   = borrowings ? borrowings.reduce((sum,b)=>sum+calcEstFine(b),0) : 0;
+      const grandTotalFine = totalFine + estTotalFine;
       function fmtD(d){ if(!d)return'—'; return new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}); }
     %>
 
@@ -150,8 +159,13 @@
       <div class="glass-card p-4 flex items-center space-x-3.5 card-hover">
         <div class="w-11 h-11 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-xl text-rose-600 shadow-sm">💰</div>
         <div>
-          <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Tiền phạt ghi nhận</div>
-          <div class="text-xl font-bold text-rose-600"><%= totalFine > 0 ? totalFine.toLocaleString('vi-VN') + ' đ' : '0 đ' %></div>
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Tiền phạt tích lũy</div>
+          <div class="text-xl font-bold text-rose-600"><%= grandTotalFine > 0 ? grandTotalFine.toLocaleString('vi-VN') + ' đ' : '0 đ' %></div>
+          <% if (estTotalFine > 0) { %>
+          <div class="text-[11px] text-amber-700 font-medium mt-0.5">
+            Đã chốt: <%= totalFine.toLocaleString('vi-VN') %> đ · Tạm tính: <%= estTotalFine.toLocaleString('vi-VN') %> đ
+          </div>
+          <% } %>
         </div>
       </div>
     </div>
@@ -276,8 +290,16 @@
                     <% } %>
                   </td>
 
-                  <td class="py-4 px-4 text-right whitespace-nowrap font-mono text-xs <%= (b.fine && b.fine > 0) ? 'font-bold text-rose-600 text-sm' : 'text-slate-400' %>">
-                    <%= (b.fine && b.fine > 0) ? b.fine.toLocaleString('vi-VN') + ' đ' : '—' %>
+                  <% const estFine = calcEstFine(b); %>
+                  <td class="py-4 px-4 text-right whitespace-nowrap font-mono">
+                    <% if (b.fine && b.fine > 0) { %>
+                    <span class="font-bold text-rose-600 text-sm"><%= b.fine.toLocaleString('vi-VN') %> đ</span>
+                    <% } else if (estFine > 0) { %>
+                    <div class="font-bold text-amber-600 text-sm"><%= estFine.toLocaleString('vi-VN') %> đ</div>
+                    <div class="text-[11px] font-sans text-amber-700/80 font-medium">Tạm tính (<%= overDays > 0 ? overDays : Math.floor((today - dueDate)/(1000*60*60*24)) %> ngày)</div>
+                    <% } else { %>
+                    <span class="text-xs text-slate-400">—</span>
+                    <% } %>
                   </td>
                 </tr>
               <% }); %>
